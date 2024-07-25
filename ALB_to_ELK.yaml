@@ -1,0 +1,39 @@
+sources:
+  syslog:
+    type: "file"
+    include:
+      - "./test.json"
+transforms:
+  remap_syslog:
+    type: "remap"
+    inputs: ["syslog"]
+    source: |
+       .message = parse_aws_alb_log!(.message)
+       # .code = .message.elb_status_code
+       # .status = parse_aws_alb!(message).elb_status_code == "200"
+
+  myfilter:
+    type: filter
+    inputs:
+      - "remap_syslog"
+    condition: |
+               includes(["400","401","403","404","500","502","503","504"], .message.elb_status_code)
+sinks:
+
+  my_sink_id:
+    type: elasticsearch
+    inputs:
+     - "myfilter"
+    endpoints: ["https://46.250.237.191:59200"]
+    auth:
+      user: "admin"
+      password: "CodesecSiemAdmin2023"
+      strategy: "basic"
+    tls:
+      verify_certificate: false
+        #pipeline: "filebeat-7.10.2-wazuh-alerts-pipeline"
+        # encoding:
+        # timestamp_format: "unix"
+    bulk:
+      #  action: index
+      index: ebz-alb-%Y.%m.%d
