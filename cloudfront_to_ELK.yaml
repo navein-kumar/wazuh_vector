@@ -1,3 +1,10 @@
+---
+<<EOF>> test.json cat
+https 2024-07-24T06:28:10.905659Z app/prod-admin-balancer/6c2e4dcf4c0d1099 103.149.113.158:49987 172.31.108.65:443 0.000 0.001 0.000 504 504 1508 395 "GET https://kkkk.kkkk.in:443/static/merchant/css/custom/loader_view.css HTTP/1.1" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36" ECDHE-RSA-AES128-GCM-SHA256 TLSv1.2 arn:aws:elasticloadbalancing:ap-south-1:341444356059:targetgroup/admin-amazon-targets/62dcdbb874e58c96 "Root=1-66a09efa-07d49c9b226a6d666b9fbd5e" "admin.kkkk.in" "session-reused" 0 2024-07-24T06:28:10.904000Z "forward" "-" "-" "172.31.108.65:443" "300" "-" "-" TID_c046d5c6702a6446ab2df66c0c9350da
+EOF
+
+---
+
 sources:
   syslog:
     type: "file"
