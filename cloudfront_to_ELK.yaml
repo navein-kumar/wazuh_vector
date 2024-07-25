@@ -1,0 +1,47 @@
+sources:
+  syslog:
+    type: "file"
+    include:
+      - "./test.json"
+
+transforms:
+  remap_syslog:
+    type: "remap"
+    inputs: ["syslog"]
+    source: |
+           .message  = parse_regex!(.message, r'^(?P<logtimestamp>\d{4}-\d{2}-\d{2}\W*\d{2}:\d{2}:\d{2})\W*(?P<xedge>\S+)\W*\d+\W*(?P<cip>\d+.\d+.\d+.\d+)\W*(?P<method>\S+)\W*(?P<curl>\S+)\W*(?P<curi>\S+)\W*(?P<code>\d+)\W*(?P<referer>\S+)\W*(?P<useragent>\S+)\W*(?P<type>\w+)\W*(?P<cookie>\S+)\W*(?P<chost>\S+)\W*(?P<http>\w+)\W*\d+\W*\S*\W*(?P<tlsv>\S+)\W*(?P<tslalg>\S+)\W*\S*\W*(?P<httpv>\S+).*$')
+              .timestamp = now()
+
+  myfilter:
+     type: filter
+     inputs:
+        - "remap_syslog"
+     condition: |
+                .message.method == "GET" || .message.method == "POST"
+
+sinks:
+
+  my_sink_id:
+    type: elasticsearch
+    inputs:
+     - "myfilter"
+    endpoints: ["https://1.1.1.1:59200"]
+    auth:
+      user: "admin"
+      password: "1111111"
+      strategy: "basic"
+    tls:
+      verify_certificate: false
+    buffer:
+      type: disk
+      max_size: 268435488000
+      when_full: block
+        #pipeline: "filebeat-7.10.2-wazuh-alerts-pipeline"
+        # encoding:
+        # timestamp_format: "unix"
+    bulk:
+      #  action: index
+      index: alb-%Y.%m.%d
+
+     
+
