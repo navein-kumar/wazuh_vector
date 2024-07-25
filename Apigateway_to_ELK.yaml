@@ -1,0 +1,55 @@
+----
+ <<EOF>> test.json cat
+{
+    "requestId": "XZqh_iiDhcwEPyQ=",
+    "ip": "162.158.175.210",
+    "requestTime": "07/May/2024:23:88:10 +0000",
+    "httpMethod": "GET",
+    "routeKey": "ANY /capital/gateway/{proxy+}",
+    "status": "200",
+    "protocol": "HTTP/1.1",
+    "responseLength": "48",
+    "domain": "api.easebuzz.in",
+    "prefix-domain": "api",
+    "path-based": "(none)"
+}
+EOF
+
+
+---
+sources:
+  apilogs:
+    type: "file"
+    include:
+      - "./test.json"
+    multiline:
+       start_pattern: ".*"
+       condition_pattern: "}$"
+       mode: "halt_with"
+       timeout_ms: 1000
+transforms:
+  remap_syslog:
+    inputs: ["apilogs"]
+    type: "remap"
+    source: |
+      .message  = parse_json!(.message)
+      .timestamp = now()
+sinks:
+  print:
+    type: "console"
+    inputs:
+      - "remap_syslog"
+    encoding:
+      codec: "json"
+  my_sink_id:
+    type: elasticsearch
+    inputs:
+      - "remap_syslog"
+    endpoints: ["https://11.11.11.191:59200"]
+    auth:
+      user: "admin"
+      password: "1111"
+      strategy: "basic"
+    tls:
+      verify_certificate: false
+
