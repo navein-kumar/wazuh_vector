@@ -20,6 +20,8 @@ EOF
 sources:
   apilogs:
     type: "file"
+    oldest_first: true
+    read_from: beginning
     include:
       - "./test.json"
     multiline:
