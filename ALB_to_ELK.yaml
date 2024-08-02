@@ -1,8 +1,13 @@
+acknowledgements:
+  enabled: true
 sources:
   syslog:
     type: "file"
     include:
-      - "./test.json"
+      - "/tmp/elb_unzipped_logs/*.log"
+    ignore_older_secs: 3600
+    oldest_first: true
+    read_from: beginning
 transforms:
   remap_syslog:
     type: "remap"
@@ -24,10 +29,10 @@ sinks:
     type: elasticsearch
     inputs:
      - "myfilter"
-    endpoints: ["https://46.250.237.191:59200"]
+    endpoints: ["https://1.31.1.148:9200"]
     auth:
       user: "admin"
-      password: "CodesecSiemAdmin2023"
+      password: "1111*ddd?"
       strategy: "basic"
     tls:
       verify_certificate: false
@@ -37,3 +42,7 @@ sinks:
     bulk:
       #  action: index
       index: ebz-alb-%Y.%m.%d
+    buffer:
+      type: disk
+        #    when_full: block
+      max_size: 268435488000
