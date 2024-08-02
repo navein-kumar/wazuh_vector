@@ -5,50 +5,55 @@ EOF
 
 ---
 
+acknowledgements:
+  enabled: true
 sources:
-  syslog:
+  syslog1:
     type: "file"
     include:
-      - "./test.json"
+      - "/tmp/cloudfront_unzipped_logs/*.log"
+    ignore_older_secs: 36000
+    oldest_first: true
+    read_from: beginning
 
 transforms:
-  remap_syslog:
+  remap_syslog1:
     type: "remap"
-    inputs: ["syslog"]
+    inputs: ["syslog1"]
     source: |
-           .message  = parse_regex!(.message, r'^(?P<logtimestamp>\d{4}-\d{2}-\d{2}\W*\d{2}:\d{2}:\d{2})\W*(?P<xedge>\S+)\W*\d+\W*(?P<cip>\d+.\d+.\d+.\d+)\W*(?P<method>\S+)\W*(?P<curl>\S+)\W*(?P<curi>\S+)\W*(?P<code>\d+)\W*(?P<referer>\S+)\W*(?P<useragent>\S+)\W*(?P<type>\w+)\W*(?P<cookie>\S+)\W*(?P<chost>\S+)\W*(?P<http>\w+)\W*\d+\W*\S*\W*(?P<tlsv>\S+)\W*(?P<tslalg>\S+)\W*\S*\W*(?P<httpv>\S+).*$')
-              .timestamp = now()
+           .message = parse_regex!(.message, r'^(?P<logtimestamp>\d{4}-\d{2}-\d{2}\W*\d{2}:\d{2}:\d{2})\W*(?P<xedge>\S+)\W*\d+\W*(?P<cip>\d+.\d+.\d+.\d+)\W*(?P<method>\S+)\W*(?P<curl>\S+)\W*(?P<curi>\S+)\W*(?P<code>\d+)\W*(?P<referer>\S+)\W*(?P<useragent>\S+)\W*(?P<type>\w+)\W*(?P<cookie>\S+)\W*(?P<chost>\S+)\W*(?P<http>\w+)\W*\d+\W*\S*\W*(?P<tlsv>\S+)\W*(?P<tslalg>\S+)\W*\S*\W*(?P<httpv>\S+).*$')
+            .timestamp = now()
 
-  myfilter:
+  myfilter1:
      type: filter
      inputs:
-        - "remap_syslog"
+        - "remap_syslog1"
      condition: |
                 .message.method == "GET" || .message.method == "POST"
-
 sinks:
 
-  my_sink_id:
+  my_sink_id1:
     type: elasticsearch
     inputs:
-     - "myfilter"
-    endpoints: ["https://1.1.1.1:59200"]
+     - "myfilter1"
+    endpoints: ["https://11.1.1.148:9200"]
     auth:
       user: "admin"
-      password: "1111111"
+      password: "Za*fff?"
       strategy: "basic"
     tls:
       verify_certificate: false
-    buffer:
-      type: disk
-      max_size: 268435488000
-      when_full: block
+        #  buffer:
+        #type: disk
+        # max_size: 268435488000
+        #  when_full: block
         #pipeline: "filebeat-7.10.2-wazuh-alerts-pipeline"
         # encoding:
         # timestamp_format: "unix"
     bulk:
       #  action: index
-      index: alb-%Y.%m.%d
-
-     
-
+      index: ebz-cloudfront-%Y.%m.%d
+    buffer:
+      type: disk
+        #    when_full: block
+      max_size: 268435488000
