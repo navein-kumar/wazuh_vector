@@ -1,0 +1,56 @@
+acknowledgements:
+  enabled: true
+sources:
+  cflogs:
+    type: "file"
+    include:
+      - "/tmp/unzipped_logs/*.log"
+    ignore_older_secs: 3600
+    oldest_first: true
+    read_from: beginning
+        #encoding:
+        #codec: "raw_message"
+transforms:
+  remap_cflog:
+    inputs: ["cflogs"]
+    type: "remap"
+    source: |
+      .message = parse_json!(.message)
+sinks:
+  #app_logs_sink:
+  #  type: file
+  #  inputs:
+  #    - "remap_cflog"
+  #  path: /tmp/cloudflare.log
+  #  encoding:
+  #    codec: "raw_message"
+  #  buffer:
+  #    type: disk
+        #    when_full: block
+        #    max_size: 268435488000
+        # apps_logs:
+        #   type: socket
+  app_logs_sink:
+    type: file
+    inputs:
+      - "remap_cflog"
+    path: /tmp/cloudflare.log
+    encoding:
+      codec: "raw_message"
+    buffer:
+      type: disk
+        #    when_full: block
+      max_size: 268435488000
+        #  apps_logs:
+        #type: socket
+        #inputs:
+      # "remap_cflog"
+        #   address: 172.31.1.73:514
+      # mode: udp
+      #path: /var/log/socket
+      #encoding:
+      #codec: "raw_message"
+        #buffer:
+      #type: disk
+        #max_size: 268435488
+        #  when_full: block
