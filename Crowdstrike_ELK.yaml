@@ -1,0 +1,73 @@
+<<EOF>> test.json cat
+{
+  "metadata":{
+   "customerIDString":"956f887xxxxxx",
+   "offset":6068,
+   "eventType":"AuthActivityAuditEvent",
+   "eventCreationTime":1656862026109,
+   "version":"1.0"
+  },
+  "event":{
+   "UserId":"api-client-id:24c6e2395axxxxxxx",
+   "UserIp":"101.0.60.100",
+   "OperationName":"streamStarted",
+   "ServiceName":"Crowdstrike Streaming API",
+   "Success":true,
+   "UTCTimestamp":1656862026,
+   "AuditKeyValues":[
+     {
+      "Key":"APIClientID",
+      "ValueString":"24c6e2395a0c4a2eb2xxxxxxx"
+     },
+     {
+      "Key":"partition",
+      "ValueString":"0"
+     },
+     {
+      "Key":"offset",
+      "ValueString":"6067"
+     },
+     {
+      "Key":"appId",
+      "ValueString":"siem-connect"
+     },
+     {
+      "Key":"eventType",
+      "ValueString":"[MobileDetectionSummaryEvent LoginAuditEvent DetectionSummaryEvent FirewallMatchEvent ReconNotificationSummaryEvent IdentityProtectionEvent ScheduledReportNotificationEvent IncidentSummaryEvent CSPMIOAStreamingEvent CustomerIOCEvent XdrDetectionSummaryEvent RemoteResponseSessionEndEvent AuthActivityAuditEvent RemoteResponseSessionStartEvent HashSpreadingEvent CSPMSearchStreamingEvent UserActivityAuditEvent]"
+     }
+   ]
+  }
+}
+EOF
+
+-----
+
+sources:
+  apilogs:
+    type: "file"
+    oldest_first: true
+    read_from: beginning
+    include:
+      - "./test.json"
+    multiline:
+       start_pattern: ".*"
+       condition_pattern: "]}}$"
+       mode: "halt_before"
+       timeout_ms: 1000
+transforms:
+  remap_syslog:
+    inputs: ["apilogs"]
+    type: "remap"
+    source: |
+      .message  = parse_json!(.message)
+      # .timestamp = now()
+sinks:
+  print:
+    type: "console"
+    inputs:
+      - "remap_syslog"
+    encoding:
+      codec: "json"
+
+
+
